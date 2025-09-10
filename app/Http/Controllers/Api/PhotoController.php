@@ -3,22 +3,60 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\Photo;
 use App\Http\Requests\StorePhotoRequest;
 use App\Http\Requests\UpdatePhotoRequest;
+use App\Http\Requests\ListPhotoRequest;
 
 class PhotoController extends Controller
 {
 
-    public function index()
+    public function index(ListPhotoRequest $request)
     {
-        $photo = Photo::paginate(5);
+
+        // $photo = Photo::paginate(5);
+        $photos = Photo::query()
+            // Filter by title (search by photo name)
+            ->when($request->filled('title'), function ($query) use ($request) {
+                $query->where('title', 'like', '%' . $request->title . '%');
+            })
+            // Filter by location (search by where photo was taken)
+            ->when($request->filled('location'), function ($query) use ($request) {
+                $query->where('location', 'like', '%' . $request->location . '%');
+            })
+            // Filter by category
+            ->when($request->filled('photo_category'), function ($query) use ($request) {
+                $query->where('photo_category', $request->photo_category);
+            })
+            // Filter by camera brand
+            ->when($request->filled('cameraBrand'), function ($query) use ($request) {
+                $query->where('camera_brand', $request->camera_brand);
+            })
+            // Filter by gear used (like lens type)
+            ->when($request->filled('gearUsed'), function ($query) use ($request) {
+                $query->where('gear_used', 'like', '%' . $request->gear_used . '%');
+            })
+            // Conditional ordering
+            ->when(
+                $request->filled('sortBy') && $request->filled('sortOrder'),
+                function ($query) use ($request) {
+                    if(!in_array($request->sortOrder, ['asc', 'desc'])) {
+                       return;
+                    }
+                    $query->orderBy($request->sortBy, $request->sortOrder);
+                },
+                // Default order
+                function ($query) {
+                    $query->orderBy('created_at', 'desc');
+                }
+            )
+            ->paginate(5);
+
 
         return response()->json([
             'status' => 'success',
-            'data' => $photo,
+            'data' => $photos,
         ]);
     }
 
