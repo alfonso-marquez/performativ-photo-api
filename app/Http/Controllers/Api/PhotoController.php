@@ -17,6 +17,18 @@ class PhotoController extends Controller
 
         // $photo = Photo::paginate(5);
         $photos = Photo::query()
+            //Global search
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhere('location', 'like', "%{$search}%")
+                        ->orWhere('photo_category', 'like', "%{$search}%")
+                        ->orWhere('camera_brand', 'like', "%{$search}%")
+                        ->orWhere('gear_used', 'like', "%{$search}%");
+                });
+            })
             // Filter by title (search by photo name)
             ->when($request->filled('title'), function ($query) use ($request) {
                 $query->where('title', 'like', '%' . $request->title . '%');
