@@ -27,7 +27,8 @@ class PhotoController extends Controller
                         ->orWhere('photo_category', 'like', "%{$search}%")
                         ->orWhere('camera_brand', 'like', "%{$search}%")
                         ->orWhere('gear_used', 'like', "%{$search}%");
-                });
+
+                })->orderBy('photo_taken', 'desc');
             })
             // Filter by title (search by photo name)
             ->when($request->filled('title'), function ($query) use ($request) {
@@ -99,15 +100,22 @@ class PhotoController extends Controller
     {
         try {
             $data = $request->validated();
+
+            // Handle photo upload
+            if ($request->hasFile('photo_path')) {
+                $data['photo_path'] = $request->file('photo_path')->store('photos', 'public');
+            } else {
+                $data['photo_path'] = "default photo path"; // no file uploaded
+            }
+
+
             $photo = Photo::create($data);
 
-            return response()->json(
-                [
-                    'status' => 'success',
-                    'message' => 'Photo created successfully',
-                    'data' => $photo,
-                ], 201);
-
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Photo created successfully',
+                'data' => $photo,
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
