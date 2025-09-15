@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Photo extends Model
 
 {
-    // use HasFactory;
+    use HasFactory;
     use SoftDeletes;
     protected $fillable = [
         'title',
