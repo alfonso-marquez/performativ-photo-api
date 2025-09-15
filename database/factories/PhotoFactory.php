@@ -17,7 +17,6 @@ class PhotoFactory extends Factory
     {
 
         $cameraBrands = ['Canon', 'Sony', 'Nikon', 'Fujifilm', 'Panasonic', 'Olympus', 'Leica', 'Mobile', 'Other'];
-        $photoCategories = ['Toy', 'Travel', 'Portrait', 'Landscape', 'Street', 'Event', 'Wildlife', 'Other'];
 
         $gearOptions = [
             'Canon 50mm f/1.8',
@@ -70,7 +69,7 @@ class PhotoFactory extends Factory
                 'Purr-fect placeholder! Do not forget to replace me with a proper image.'
             ]),
             'location' => $this->faker->city() . ', ' . $this->faker->country(),
-            'photo_category' => $this->faker->randomElement($photoCategories),
+            'photo_category' => 'Wildlife',
             'camera_brand' => $this->faker->randomElement($cameraBrands),
             'gear_used' => implode(', ', $gearUsed),
             'photo_path' => $catImageUrl, // Store the real cat image URL as placeholder
