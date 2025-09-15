@@ -14,6 +14,6 @@ Route::prefix("photos")->group(function () {
     Route::get('/', [PhotoController::class, 'index']);       // GET /api/photos
     Route::post('/', [PhotoController::class, 'store']);      // POST /api/photos
     Route::get('{id}', [PhotoController::class, 'show']);     // GET /api/photos/{id}
-    Route::put('{id}', [PhotoController::class, 'update']);   // PUT /api/photos/{id}
+    Route::post('{id}', [PhotoController::class, 'update']);   // PUT /api/photos/{id}
     Route::delete('{id}', [PhotoController::class, 'destroy']); // DELETE /api/photos/{id}
 });

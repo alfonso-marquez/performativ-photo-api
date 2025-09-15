@@ -30,7 +30,7 @@ class StorePhotoRequest extends FormRequest
             'photo_category' => 'nullable|string|max:255',
             'camera_brand'   => 'nullable|string|max:100',
             'gear_used'      => 'nullable|string',
-            'photo_path'          => 'required|image|max:10240',
+            'photo_path'          => 'required|image|max:20240', // Max size 20MB
             'photo_taken'    => 'nullable|date_format:Y-m-d|before_or_equal:tomorrow',
         ];
     }

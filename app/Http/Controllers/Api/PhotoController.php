@@ -8,6 +8,7 @@ use App\Models\Photo;
 use App\Http\Requests\StorePhotoRequest;
 use App\Http\Requests\UpdatePhotoRequest;
 use App\Http\Requests\ListPhotoRequest;
+use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
 {
@@ -27,8 +28,7 @@ class PhotoController extends Controller
                         ->orWhere('photo_category', 'like', "%{$search}%")
                         ->orWhere('camera_brand', 'like', "%{$search}%")
                         ->orWhere('gear_used', 'like', "%{$search}%");
-
-                })->orderBy('photo_taken', 'desc');
+                });
             })
             // Filter by title (search by photo name)
             ->when($request->filled('title'), function ($query) use ($request) {
@@ -54,14 +54,16 @@ class PhotoController extends Controller
             ->when(
                 $request->filled('sortBy') && $request->filled('sortOrder'),
                 function ($query) use ($request) {
-                    if(!in_array($request->sortOrder, ['asc', 'desc'])) {
-                       return;
+                    if (!in_array($request->sortOrder, ['asc', 'desc'])) {
+                        return;
                     }
-                    $query->orderBy($request->sortBy, $request->sortOrder);
+                    $query->orderBy($request->sortBy, $request->sortOrder)
+                        ->orderBy('created_at', 'desc');
                 },
                 // Default order
                 function ($query) {
-                    $query->orderBy('created_at', 'desc');
+                    $query->orderBy('created_at', 'desc')
+                        ->orderBy('photo_taken', 'desc');
                 }
             )
             ->paginate(5);
@@ -82,7 +84,6 @@ class PhotoController extends Controller
                 'status' => 'success',
                 'data' => $photo,
             ], 200);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -111,6 +112,9 @@ class PhotoController extends Controller
 
             $photo = Photo::create($data);
 
+            // Storage::url to get the full URL of the stored photo
+            $photo->photo_path = $photo->photo_path ? Storage::url($photo->photo_path) : null;
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Photo created successfully',
@@ -131,13 +135,33 @@ class PhotoController extends Controller
             $photo = Photo::findOrFail($id);
             $data = $request->validated();
 
+            // Debug: see what data Laravel actually received
+                // dd([
+                //     'validated_data' => $data,
+                //     'photo_before_update' => $photo
+                // ]);
+
+            // Handle file replacement
+            if ($request->hasFile('photo_path')) {
+                // Delete old photo if exists
+                if ($photo->photo_path && Storage::disk('public')->exists($photo->photo_path)) {
+                    Storage::disk('public')->delete($photo->photo_path);
+                }
+                // Store new file
+                $data['photo_path'] = $request->file('photo_path')->store('photos', 'public');
+            }
+
             $photo->update($data);
+            // dd($photo);
+            // Using fill() instead of update() to avoid overwriting fields with null
+            // $photo->fill($data);
+            // $photo->save();
 
             return response()->json([
                 'status'  => 'success',
                 'message' => 'Photo details updated successfully',
                 'data'    => $photo,
-            ]);
+            ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status'  => 'error',
