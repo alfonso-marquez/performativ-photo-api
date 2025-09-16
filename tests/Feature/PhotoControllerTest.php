@@ -10,10 +10,10 @@ use Illuminate\Support\Facades\Storage;
 
 class PhotoControllerTest extends TestCase
 {
+
     use RefreshDatabase;
 
-    /** @test */
-    public function it_can_list_photos()
+    public function test_it_can_list_photos()
     {
         Photo::factory()->count(3)->create();
 
@@ -26,8 +26,7 @@ class PhotoControllerTest extends TestCase
                  ]);
     }
 
-    /** @test */
-    public function it_can_show_a_photo()
+    public function test_it_can_show_a_photo()
     {
         $photo = Photo::factory()->create();
 
@@ -43,8 +42,7 @@ class PhotoControllerTest extends TestCase
                  ]);
     }
 
-    /** @test */
-    public function it_returns_404_if_photo_not_found()
+    public function test_it_returns_404_if_photo_not_found()
     {
         $response = $this->getJson('/api/photos/999');
 
@@ -52,8 +50,7 @@ class PhotoControllerTest extends TestCase
                  ->assertJson(['status' => 'error']);
     }
 
-    /** @test */
-    public function it_can_create_a_photo()
+    public function test_it_can_create_a_photo()
     {
         $storage = Storage::fake('public');
 
@@ -84,8 +81,7 @@ class PhotoControllerTest extends TestCase
         $this->assertDatabaseHas('photos', ['title' => 'Test Photo']);
     }
 
-    /** @test */
-    public function it_can_update_a_photo()
+    public function test_it_can_update_a_photo()
     {
         Storage::fake('public');
 
@@ -111,8 +107,7 @@ class PhotoControllerTest extends TestCase
         $this->assertDatabaseHas('photos', ['id' => $photo->id, 'title' => 'Updated Title']);
     }
 
-    /** @test */
-    public function it_can_delete_a_photo()
+    public function test_it_can_delete_a_photo()
     {
         $photo = Photo::factory()->create();
 
